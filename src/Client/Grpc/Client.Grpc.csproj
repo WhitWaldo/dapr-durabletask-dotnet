@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageDescription>The gRPC client for the Durable Task Framework.</PackageDescription>
     <EnableStyleCop>true</EnableStyleCop>
+    <PackageId>Dapr.DurableTask.Client.Grpc</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
