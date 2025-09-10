@@ -52,6 +52,15 @@ public record TaskOptions
     /// <param name="instanceId">The instance ID to use.</param>
     /// <returns>A new <see cref="SubOrchestrationOptions" />.</returns>
     public SubOrchestrationOptions WithInstanceId(string instanceId) => new(this, instanceId);
+
+    /// <summary>
+    /// Returns a new <see cref="SubOrchestrationOptions" /> with the provided instance and Dapr app IDs. This can be
+    /// used when starting a new sub-orchestration to specify the instance ID and the Dapr app ID to run it on./>
+    /// </summary>
+    /// <param name="instanceId">The instance ID to use.</param>
+    /// <param name="appId">The Dapr app ID to use.</param>
+    /// <returns>A new <see cref="SubOrchestrationOptions"/>.</returns>
+    public SubOrchestrationOptions WithInstanceId(string instanceId, string appId) => new(this, instanceId, appId);
 }
 
 /// <summary>
@@ -65,10 +74,12 @@ public record SubOrchestrationOptions : TaskOptions
     /// </summary>
     /// <param name="retry">The task retry options.</param>
     /// <param name="instanceId">The orchestration instance ID.</param>
-    public SubOrchestrationOptions(TaskRetryOptions? retry = null, string? instanceId = null)
+    /// <param name="appId">The identifier of the Dapr App on which the sub-orchestration should be run.</param>
+    public SubOrchestrationOptions(TaskRetryOptions? retry = null, string? instanceId = null, string? appId = null)
         : base(retry)
     {
         this.InstanceId = instanceId;
+        this.AppId = appId;
     }
 
     /// <summary>
@@ -76,7 +87,8 @@ public record SubOrchestrationOptions : TaskOptions
     /// </summary>
     /// <param name="options">The task options to wrap.</param>
     /// <param name="instanceId">The orchestration instance ID.</param>
-    public SubOrchestrationOptions(TaskOptions options, string? instanceId = null)
+    /// <param name="appId">The identifier of the Dapr App on which the sub-orchestration should be run.</param>
+    public SubOrchestrationOptions(TaskOptions options, string? instanceId = null, string? appId = null)
         : base(options)
     {
         this.InstanceId = instanceId;
@@ -84,12 +96,23 @@ public record SubOrchestrationOptions : TaskOptions
         {
             this.InstanceId = derived.InstanceId;
         }
+
+        this.AppId = appId;
+        if (appId is null && options is SubOrchestrationOptions derived2)
+        {
+            this.AppId = derived2.AppId;
+        }
     }
 
     /// <summary>
     /// Gets the orchestration instance ID.
     /// </summary>
     public string? InstanceId { get; init; }
+
+    /// <summary>
+    /// Gets the Dapr App ID.
+    /// </summary>
+    public string? AppId { get; init; }
 }
 
 /// <summary>
@@ -98,11 +121,14 @@ public record SubOrchestrationOptions : TaskOptions
 /// <param name="InstanceId">
 /// The unique ID of the orchestration instance to schedule. If not specified, a new GUID value is used.
 /// </param>
+/// <param name="AppId">
+/// The identifier of the Dapr App on which the orchestration should be run.
+/// </param>
 /// <param name="StartAt">
 /// The time when the orchestration instance should start executing. If not specified or if a date-time in the past
 /// is specified, the orchestration instance will be scheduled immediately.
 /// </param>
-public record StartOrchestrationOptions(string? InstanceId = null, DateTimeOffset? StartAt = null)
+public record StartOrchestrationOptions(string? InstanceId = null, string? AppId = null, DateTimeOffset? StartAt = null)
 {
     /// <summary>
     /// Gets the tags to associate with the orchestration instance.
