@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using DurableTask.Core;
-using DurableTask.Core.Serializing;
 using Microsoft.Extensions.Logging;
 
 namespace Dapr.DurableTask.Worker.Shims;
@@ -37,19 +36,19 @@ class TaskActivityShim : TaskActivity
     }
 
     /// <inheritdoc/>
-    public override async Task<string?> RunAsync(TaskContext coreContext, string? rawInput)
+    public override async Task<string?> RunAsync(TaskContext coreContext, string? rawInput, string taskExecutionKey)
     {
         Check.NotNull(coreContext);
         string? strippedRawInput = StripArrayCharacters(rawInput);
         object? deserializedInput = this.dataConverter.Deserialize(strippedRawInput, this.implementation.InputType);
-        TaskActivityContextWrapper contextWrapper = new(coreContext, this.name);
+        TaskActivityContextWrapper contextWrapper = new(coreContext, this.name, taskExecutionKey);
 
         string instanceId = coreContext.OrchestrationInstance.InstanceId;
         this.logger.ActivityStarted(instanceId, this.name);
 
         try
         {
-            object? output = await this.implementation.RunAsync(contextWrapper, deserializedInput);
+            object? output = await this.implementation.RunAsync(contextWrapper, deserializedInput, taskExecutionKey);
 
             // Return the output (if any) as a serialized string.
             string? serializedOutput = this.dataConverter.Serialize(output);
@@ -66,7 +65,7 @@ class TaskActivityShim : TaskActivity
 
     /// <inheritdoc/>
     /// <remarks>Not used/called.</remarks>
-    public override string Run(TaskContext context, string input) => throw new NotImplementedException();
+    public override string Run(TaskContext context, string input, string taskExecutionKey) => throw new NotImplementedException();
 
     static string? StripArrayCharacters(string? input)
     {
@@ -79,19 +78,11 @@ class TaskActivityShim : TaskActivity
         return input;
     }
 
-    sealed class TaskActivityContextWrapper : TaskActivityContext
+    sealed class TaskActivityContextWrapper(TaskContext taskContext, TaskName name, string taskExecutionKey) : TaskActivityContext
     {
-        readonly TaskContext innerContext;
-        readonly TaskName name;
+        public override TaskName Name => name;
 
-        public TaskActivityContextWrapper(TaskContext taskContext, TaskName name)
-        {
-            this.innerContext = taskContext;
-            this.name = name;
-        }
-
-        public override TaskName Name => this.name;
-
-        public override string InstanceId => this.innerContext.OrchestrationInstance.InstanceId;
+        public override string InstanceId => taskContext.OrchestrationInstance.InstanceId;
+        public override string ExecutionKey => taskExecutionKey 
     }
 }

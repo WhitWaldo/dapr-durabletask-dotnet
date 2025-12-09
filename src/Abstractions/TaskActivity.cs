@@ -29,8 +29,9 @@ public interface ITaskActivity
     /// </summary>
     /// <param name="context">The task activity's context.</param>
     /// <param name="input">The task activity's input.</param>
+    /// <param name="taskExecutionKey">The task execution key of the current task activity.</param>
     /// <returns>Returns the activity output as the result of a <see cref="Task"/>.</returns>
-    Task<object?> RunAsync(TaskActivityContext context, object? input);
+    Task<object?> RunAsync(TaskActivityContext context, object? input, string taskExecutionKey);
 }
 
 /// <summary>
@@ -71,7 +72,7 @@ public abstract class TaskActivity<TInput, TOutput> : ITaskActivity
     Type ITaskActivity.OutputType => typeof(TOutput);
 
     /// <inheritdoc/>
-    async Task<object?> ITaskActivity.RunAsync(TaskActivityContext context, object? input)
+    async Task<object?> ITaskActivity.RunAsync(TaskActivityContext context, object? input, string taskExecutionKey)
     {
         Check.NotNull(context, nameof(context));
         if (!IsValidInput(input, out TInput? typedInput))
@@ -79,7 +80,7 @@ public abstract class TaskActivity<TInput, TOutput> : ITaskActivity
             throw new ArgumentException($"Input type '{input?.GetType()}' does not match expected type '{typeof(TInput)}'.");
         }
 
-        return await this.RunAsync(context, typedInput);
+        return await this.RunAsync(context, typedInput, taskExecutionKey);
     }
 
     /// <summary>
@@ -87,8 +88,9 @@ public abstract class TaskActivity<TInput, TOutput> : ITaskActivity
     /// </summary>
     /// <param name="context">Provides access to additional context for the current activity execution.</param>
     /// <param name="input">The deserialized activity input.</param>
+    /// <param name="taskExecutionKey">The task execution key of the current task activity</param>
     /// <returns>The output of the activity as a task.</returns>
-    public abstract Task<TOutput> RunAsync(TaskActivityContext context, TInput input);
+    public abstract Task<TOutput> RunAsync(TaskActivityContext context, TInput input, string taskExecutionKey);
 
     /// <summary>
     /// Due to nullable reference types being static analysis only, we need to do our best efforts for validating the

@@ -64,7 +64,7 @@ public class DurableTaskShimFactory
     /// <param name="implementation">The activity delegate to wrap.</param>
     /// <returns>A new <see cref="TaskActivity" />.</returns>
     public TaskActivity CreateActivity<TInput, TOutput>(
-        TaskName name, Func<TaskActivityContext, TInput?, Task<TOutput?>> implementation)
+        TaskName name, Func<TaskActivityContext, TInput?, string, Task<TOutput?>> implementation)
     {
         Check.NotDefault(name);
         Check.NotNull(implementation);

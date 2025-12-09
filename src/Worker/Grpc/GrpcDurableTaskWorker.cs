@@ -56,13 +56,13 @@ sealed partial class GrpcDurableTaskWorker : DurableTaskWorker
         await new Processor(this, new(callInvoker)).ExecuteAsync(stoppingToken);
     }
 
-    GrpcChannel GetChannel(string? address)
+    static GrpcChannel GetChannel(string? address)
     {
         if (string.IsNullOrWhiteSpace(address))
         {
             address = "http://localhost:4001";
         }
-        
+
         // Configure keep-alive settings to maintain long-lived connections
         var handler = new SocketsHttpHandler
         {
@@ -128,7 +128,7 @@ sealed partial class GrpcDurableTaskWorker : DurableTaskWorker
             return default;
         }
 
-        c = this.GetChannel(this.grpcOptions.Address);
+        c = GetChannel(this.grpcOptions.Address);
         callInvoker = c.CreateCallInvoker();
         address = c.Target;
         return new AsyncDisposable(() => new(c.ShutdownAsync()));

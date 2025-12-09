@@ -25,4 +25,10 @@ public abstract class TaskActivityContext
     /// Gets the unique ID of the current orchestration instance.
     /// </summary>
     public abstract string InstanceId { get; }
+
+    /// <summary>
+    /// Gets the task execution key of the current task activity. This key is used to
+    /// identify the task execution and is unique for each task execution.
+    /// </summary>
+    public abstract string ExecutionKey { get; }
 }

@@ -17,7 +17,7 @@ public static class FuncTaskActivity
     /// <param name="implementation">The activity implementation.</param>
     /// <returns>A new activity.</returns>
     public static TaskActivity<TInput, TOutput> Create<TInput, TOutput>(
-        Func<TaskActivityContext, TInput, Task<TOutput>> implementation)
+        Func<TaskActivityContext, TInput, string, Task<TOutput>> implementation)
     {
         Check.NotNull(implementation);
         return new Implementation<TInput, TOutput>(implementation);
@@ -31,21 +31,21 @@ public static class FuncTaskActivity
     /// <typeparam name="TOutput">The Activity output type.</typeparam>
     class Implementation<TInput, TOutput> : TaskActivity<TInput, TOutput>
     {
-        readonly Func<TaskActivityContext, TInput, Task<TOutput>> implementation;
+        readonly Func<TaskActivityContext, TInput, string, Task<TOutput>> implementation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Implementation{TInput, TOutput}"/> class.
         /// </summary>
         /// <param name="implementation">The Activity function.</param>
-        public Implementation(Func<TaskActivityContext, TInput, Task<TOutput>> implementation)
+        public Implementation(Func<TaskActivityContext, TInput, string, Task<TOutput>> implementation)
         {
             this.implementation = implementation;
         }
 
         /// <inheritdoc/>
-        public override Task<TOutput> RunAsync(TaskActivityContext context, TInput input)
+        public override Task<TOutput> RunAsync(TaskActivityContext context, TInput input, string taskExecutionKey)
         {
-            return this.implementation(context, input);
+            return this.implementation(context, input, taskExecutionKey);
         }
     }
 }

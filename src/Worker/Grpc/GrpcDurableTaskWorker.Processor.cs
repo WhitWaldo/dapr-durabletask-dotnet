@@ -473,7 +473,7 @@ sealed partial class GrpcDurableTaskWorker
             string rawInput = request.Input;
 
             int inputSize = rawInput != null ? Encoding.UTF8.GetByteCount(rawInput) : 0;
-            this.Logger.ReceivedActivityRequest(request.Name, request.TaskId, instance.InstanceId, inputSize);
+            this.Logger.ReceivedActivityRequest(request.Name, request.TaskId, instance.InstanceId, inputSize, request.TaskExecutionId);
 
             TaskContext innerContext = new(instance);
             TaskName name = new(request.Name);
@@ -482,12 +482,13 @@ sealed partial class GrpcDurableTaskWorker
             try
             {
                 await using AsyncServiceScope scope = this.worker.services.CreateAsyncScope();
+                string taskExecutionKey = $"{request.OrchestrationInstance.InstanceId}-{request.Name}";
                 if (this.worker.Factory.TryCreateActivity(name, scope.ServiceProvider, out ITaskActivity? activity))
                 {
                     // Both the factory invocation and the RunAsync could involve user code and need to be handled as
                     // part of try/catch.
                     TaskActivity shim = this.shimFactory.CreateActivity(name, activity);
-                    output = await shim.RunAsync(innerContext, request.Input);
+                    output = await shim.RunAsync(innerContext, request.Input, taskExecutionKey);
                 }
                 else
                 {

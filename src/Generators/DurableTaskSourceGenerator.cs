@@ -15,7 +15,7 @@ namespace Dapr.DurableTask.Generators
     /// Generator for DurableTask.
     /// </summary>
     [Generator]
-    public class DurableTaskSourceGenerator : ISourceGenerator
+    public class DurableTaskSourceGenerator : IIncremSourceGenerator
     {
         /* Example input:
          * 
